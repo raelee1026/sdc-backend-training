@@ -1,8 +1,10 @@
 from fastapi import FastAPI, Path, Query, Body, Cookie
-from pydantic import BaseModel
-from typing import Union, Annotated
+from pydantic import BaseModel, Field
+from decimal import Decimal
+from typing import Annotated
 from enum import Enum
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
+
 
 class Item(BaseModel):
     name: str
@@ -83,19 +85,23 @@ async def create_user(
 
 @app.post("/items/extra_data_types/")
 async def create_item_with_extra_data(
-    start_time: Annotated[datetime, Body()], # Start time of the item's availability.
-    end_time: Annotated[str, Body()], # End time of the item's availability.
-    repeat_every: Annotated[timedelta, Body()], # Time interval for repeating the item.
-    process_id: Annotated[str, Body()], # Unique identifier for the process.
+    start_time: Annotated[datetime, Body()], 
+    end_time: Annotated[str, Body()], 
+    repeat_every: Annotated[timedelta, Body()], 
+    process_id: Annotated[str, Body()], 
 ):
     return {
-            "message": "This is an item with extra data types.", 
-            "process_id": process_id
+        "message": "This is an item with extra data types.",
+        "start_time": start_time,
+        "end_time": end_time,
+        "repeat_every": repeat_every,
+        "process_id": process_id
     }
+
 
 @app.get("/items/cookies/")
 async def read_items_from_cookies(
-    session_id: Annotated[str, Cookie()], # Session ID from the client's cookies.
+    session_id: Annotated[str, Cookie()], 
 ):
     return {
         "session_id": session_id, 
