@@ -1,7 +1,8 @@
-from fastapi import FastAPI, Path, Query
+from fastapi import FastAPI, Path, Query, Body, Cookie
 from pydantic import BaseModel
 from typing import Union, Annotated
 from enum import Enum
+from datetime import datetime, timedelta
 
 class Item(BaseModel):
     name: str
@@ -44,4 +45,61 @@ async def get_item(
             "description": "This is a sample item.",
             "sort_order": sort_order
         }
-    return {"item_id": item_id, "q": q}
+    
+@app.post("/items/filter/")
+async def filter_items(
+    price_min: int,
+    price_max: int,
+    tax_included: bool ,
+    tags: list[str] = Query(None),
+):
+    return {"price_range": [price_min, price_max], 
+            "tax_included": tax_included, 
+            "tags": tags,
+            "message": "This is a filtered list of items based on the provided criteria."}
+
+@app.post("/items/create_with_fields/")
+async def create_item_with_fields(
+    item: Item, 
+    importance: Annotated[int, Body()],
+):
+    return {"item": item, "importance": importance}
+
+@app.post("/offers/")
+async def create_offer(
+    name: Annotated[str, Body()],
+    discount: Annotated[float, Body()], 
+    items: Annotated[list[Item], Body()],
+):
+    return {"offer_name": name, "discount": discount, "items": items}
+
+@app.post("/users/")
+async def create_user(
+    username: Annotated[str, Body()],
+    email: Annotated[str, Body()],
+    full_name: Annotated[str, Body()],
+):
+    return {"username": username, "email": email, "full_name": full_name}
+
+@app.post("/items/extra_data_types/")
+async def create_item_with_extra_data(
+    start_time: Annotated[datetime, Body()], # Start time of the item's availability.
+    end_time: Annotated[str, Body()], # End time of the item's availability.
+    repeat_every: Annotated[timedelta, Body()], # Time interval for repeating the item.
+    process_id: Annotated[str, Body()], # Unique identifier for the process.
+):
+    return {
+            "message": "This is an item with extra data types.", 
+            "process_id": process_id
+    }
+
+@app.get("/items/cookies/")
+async def read_items_from_cookies(
+    session_id: Annotated[str, Cookie()], # Session ID from the client's cookies.
+):
+    return {
+        "session_id": session_id, 
+        "message": "This is the session ID obtained from the cookies."
+    }
+
+
