@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Path, Query, Body, Cookie, File, Form, UploadFile, HTTPException
 from pydantic import BaseModel, Field
 from decimal import Decimal
-from typing import Annotated
+from typing import Annotated, Optional, List
 from enum import Enum
 from datetime import datetime, time, timedelta
 
@@ -11,6 +11,15 @@ class Item(BaseModel):
     description: str
     price: float
     tax: float
+
+class Author(BaseModel):
+    name: str
+    age: int
+
+class Book(BaseModel):
+    title: str
+    author: Author
+    summary: str = None
 
 app = FastAPI()
 
@@ -127,4 +136,21 @@ async def create_item_with_form_and_file(
             "tax": tax, 
             "message": "This is an item created using form data and a file."
     }
+
+@app.get("/books/", response_model=List[Book])
+async def get_books():
+    return [
+        {"title": "Book 1", "author": {"name": "Author 1", "age": 50}, "summary": "This is a summary of the book."},
+        {"title": "Book 2", "author": {"name": "Author 2", "age": 51}},
+    ]
+
+@app.post("/books/create_with_author/", response_model=Book)
+async def create_book_with_author(book: Book):
+    return book
+
+@app.post("/books/", response_model=Book, status_code=201)
+async def create_book(book: Book):
+    return book
+
+
 
